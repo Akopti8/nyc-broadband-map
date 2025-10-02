@@ -1,0 +1,2078 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="data/NYC_Census_tracts_0.js"></script>
+        <script src="data/zohran_win_by_ed_1.js"></script>
+        <script src="data/HouseholdwNoInternetAccess_2.js"></script>
+        <script src="data/broadbandtypedominant_3.js"></script>
+        <script src="data/householdswfiber_4.js"></script>
+        <script src="data/MedianHouseholdIncome_5.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[40.527902801120305,-74.42609684858076],[40.96942199783197,-73.43040308756308]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        function pop_NYC_Census_tracts_0(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CTLabel'] !== null ? autolinker.link(String(feature.properties['CTLabel']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroCode'] !== null ? autolinker.link(String(feature.properties['BoroCode']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroName'] !== null ? autolinker.link(String(feature.properties['BoroName']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CT2020'] !== null ? autolinker.link(String(feature.properties['CT2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroCT2020'] !== null ? autolinker.link(String(feature.properties['BoroCT2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDEligibil'] !== null ? autolinker.link(String(feature.properties['CDEligibil']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NTAName'] !== null ? autolinker.link(String(feature.properties['NTAName']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NTA2020'] !== null ? autolinker.link(String(feature.properties['NTA2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDTA2020'] !== null ? autolinker.link(String(feature.properties['CDTA2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDTANAME'] !== null ? autolinker.link(String(feature.properties['CDTANAME']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['GEOID'] !== null ? autolinker.link(String(feature.properties['GEOID']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['PUMA'] !== null ? autolinker.link(String(feature.properties['PUMA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Leng'] !== null ? autolinker.link(String(feature.properties['Shape_Leng']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Area'] !== null ? autolinker.link(String(feature.properties['Shape_Area']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_NYC_Census_tracts_0_0() {
+            return {
+                pane: 'pane_NYC_Census_tracts_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(164,113,88,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_NYC_Census_tracts_0');
+        map.getPane('pane_NYC_Census_tracts_0').style.zIndex = 400;
+        map.getPane('pane_NYC_Census_tracts_0').style['mix-blend-mode'] = 'normal';
+        var layer_NYC_Census_tracts_0 = new L.geoJson(json_NYC_Census_tracts_0, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_NYC_Census_tracts_0',
+            layerName: 'layer_NYC_Census_tracts_0',
+            pane: 'pane_NYC_Census_tracts_0',
+            onEachFeature: pop_NYC_Census_tracts_0,
+            style: style_NYC_Census_tracts_0_0,
+        });
+        bounds_group.addLayer(layer_NYC_Census_tracts_0);
+        map.addLayer(layer_NYC_Census_tracts_0);
+        function pop_zohran_win_by_ed_1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['OBJECTID'] !== null ? autolinker.link(String(feature.properties['OBJECTID']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ElectDist'] !== null ? autolinker.link(String(feature.properties['ElectDist']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape__Are'] !== null ? autolinker.link(String(feature.properties['Shape__Are']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape__Len'] !== null ? autolinker.link(String(feature.properties['Shape__Len']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['mamdani_re'] !== null ? autolinker.link(String(feature.properties['mamdani_re']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['mamdani__1'] !== null ? autolinker.link(String(feature.properties['mamdani__1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['mamdani__2'] !== null ? autolinker.link(String(feature.properties['mamdani__2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['mamdani__3'] !== null ? autolinker.link(String(feature.properties['mamdani__3']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['mamdani__4'] !== null ? autolinker.link(String(feature.properties['mamdani__4']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_zohran_win_by_ed_1_0(feature) {
+            if (feature.properties['mamdani__4'] >= -50.000000 && feature.properties['mamdani__4'] <= -34.502924 ) {
+                return {
+                pane: 'pane_zohran_win_by_ed_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,255,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['mamdani__4'] >= -34.502924 && feature.properties['mamdani__4'] <= -26.870748 ) {
+                return {
+                pane: 'pane_zohran_win_by_ed_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,213,213,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['mamdani__4'] >= -26.870748 && feature.properties['mamdani__4'] <= -17.525773 ) {
+                return {
+                pane: 'pane_zohran_win_by_ed_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,170,170,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['mamdani__4'] >= -17.525773 && feature.properties['mamdani__4'] <= 40.891473 ) {
+                return {
+                pane: 'pane_zohran_win_by_ed_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,128,128,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['mamdani__4'] >= 40.891473 && feature.properties['mamdani__4'] <= 50.909091 ) {
+                return {
+                pane: 'pane_zohran_win_by_ed_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,85,85,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['mamdani__4'] >= 50.909091 && feature.properties['mamdani__4'] <= 61.797753 ) {
+                return {
+                pane: 'pane_zohran_win_by_ed_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,42,42,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['mamdani__4'] >= 61.797753 && feature.properties['mamdani__4'] <= 100.000000 ) {
+                return {
+                pane: 'pane_zohran_win_by_ed_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,0,0,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_zohran_win_by_ed_1');
+        map.getPane('pane_zohran_win_by_ed_1').style.zIndex = 401;
+        map.getPane('pane_zohran_win_by_ed_1').style['mix-blend-mode'] = 'normal';
+        var layer_zohran_win_by_ed_1 = new L.geoJson(json_zohran_win_by_ed_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_zohran_win_by_ed_1',
+            layerName: 'layer_zohran_win_by_ed_1',
+            pane: 'pane_zohran_win_by_ed_1',
+            onEachFeature: pop_zohran_win_by_ed_1,
+            style: style_zohran_win_by_ed_1_0,
+        });
+        bounds_group.addLayer(layer_zohran_win_by_ed_1);
+        map.addLayer(layer_zohran_win_by_ed_1);
+        function pop_HouseholdwNoInternetAccess_2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CTLabel'] !== null ? autolinker.link(String(feature.properties['CTLabel']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroCode'] !== null ? autolinker.link(String(feature.properties['BoroCode']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroName'] !== null ? autolinker.link(String(feature.properties['BoroName']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CT2020'] !== null ? autolinker.link(String(feature.properties['CT2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroCT2020'] !== null ? autolinker.link(String(feature.properties['BoroCT2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDEligibil'] !== null ? autolinker.link(String(feature.properties['CDEligibil']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NTAName'] !== null ? autolinker.link(String(feature.properties['NTAName']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NTA2020'] !== null ? autolinker.link(String(feature.properties['NTA2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDTA2020'] !== null ? autolinker.link(String(feature.properties['CDTA2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDTANAME'] !== null ? autolinker.link(String(feature.properties['CDTANAME']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['GEOID'] !== null ? autolinker.link(String(feature.properties['GEOID']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['PUMA'] !== null ? autolinker.link(String(feature.properties['PUMA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Leng'] !== null ? autolinker.link(String(feature.properties['Shape_Leng']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Area'] !== null ? autolinker.link(String(feature.properties['Shape_Area']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_NAME'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_NAME']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_state'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_state']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_county'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_county']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_tract'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_tract']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_households_total'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_households_total']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_median_income']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_broadband_any'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_broadband_any']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_no_internet'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_no_internet']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fiber'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fiber']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cable'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cable']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_dsl'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_dsl']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fixed_wireless'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fixed_wireless']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_satellite'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_satellite']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cellular_only'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cellular_only']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_broadband_any'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_broadband_any']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cable'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cable']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_dsl'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_dsl']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fixed_wireless'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fixed_wireless']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_satellite'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_satellite']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cellular_only'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cellular_only']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_broadband_type_dom'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_broadband_type_dom']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_need_index_0_100'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_need_index_0_100']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_HouseholdwNoInternetAccess_2_0(feature) {
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 0.000000 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 0.000000 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,253,191,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 0.000000 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 0.799109 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,228,165,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 0.799109 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 1.793950 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,201,141,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 1.793950 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 2.542095 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,175,120,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 2.542095 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 3.365842 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,149,103,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 3.365842 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 4.154834 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(249,122,93,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 4.154834 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 4.929511 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(241,96,93,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 4.929511 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 5.793341 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(225,77,102,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 5.793341 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 6.576134 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(205,63,113,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 6.576134 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 7.416744 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(182,54,122,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 7.416744 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 8.207761 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(158,47,127,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 8.207761 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 9.104049 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(136,39,129,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 9.104049 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 10.075035 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(114,31,129,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 10.075035 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 11.195225 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(91,22,126,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 11.195225 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 12.427723 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(69,15,118,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 12.427723 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 14.305695 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(45,17,95,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 14.305695 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 16.613829 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(24,15,62,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 16.613829 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 21.559700 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(8,7,30,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] >= 21.559700 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] <= 100.000000 ) {
+                return {
+                pane: 'pane_HouseholdwNoInternetAccess_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(0,0,4,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_HouseholdwNoInternetAccess_2');
+        map.getPane('pane_HouseholdwNoInternetAccess_2').style.zIndex = 402;
+        map.getPane('pane_HouseholdwNoInternetAccess_2').style['mix-blend-mode'] = 'normal';
+        var layer_HouseholdwNoInternetAccess_2 = new L.geoJson(json_HouseholdwNoInternetAccess_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_HouseholdwNoInternetAccess_2',
+            layerName: 'layer_HouseholdwNoInternetAccess_2',
+            pane: 'pane_HouseholdwNoInternetAccess_2',
+            onEachFeature: pop_HouseholdwNoInternetAccess_2,
+            style: style_HouseholdwNoInternetAccess_2_0,
+        });
+        bounds_group.addLayer(layer_HouseholdwNoInternetAccess_2);
+        map.addLayer(layer_HouseholdwNoInternetAccess_2);
+        function pop_broadbandtypedominant_3(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CTLabel'] !== null ? autolinker.link(String(feature.properties['CTLabel']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroCode'] !== null ? autolinker.link(String(feature.properties['BoroCode']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroName'] !== null ? autolinker.link(String(feature.properties['BoroName']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CT2020'] !== null ? autolinker.link(String(feature.properties['CT2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroCT2020'] !== null ? autolinker.link(String(feature.properties['BoroCT2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDEligibil'] !== null ? autolinker.link(String(feature.properties['CDEligibil']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NTAName'] !== null ? autolinker.link(String(feature.properties['NTAName']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NTA2020'] !== null ? autolinker.link(String(feature.properties['NTA2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDTA2020'] !== null ? autolinker.link(String(feature.properties['CDTA2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDTANAME'] !== null ? autolinker.link(String(feature.properties['CDTANAME']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['GEOID'] !== null ? autolinker.link(String(feature.properties['GEOID']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['PUMA'] !== null ? autolinker.link(String(feature.properties['PUMA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Leng'] !== null ? autolinker.link(String(feature.properties['Shape_Leng']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Area'] !== null ? autolinker.link(String(feature.properties['Shape_Area']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_NAME'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_NAME']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_state'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_state']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_county'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_county']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_tract'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_tract']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_households_total'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_households_total']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_median_income']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_broadband_any'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_broadband_any']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_no_internet'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_no_internet']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fiber'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fiber']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cable'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cable']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_dsl'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_dsl']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fixed_wireless'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fixed_wireless']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_satellite'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_satellite']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cellular_only'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cellular_only']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_broadband_any'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_broadband_any']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cable'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cable']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_dsl'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_dsl']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fixed_wireless'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fixed_wireless']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_satellite'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_satellite']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cellular_only'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cellular_only']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_broadband_type_dom'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_broadband_type_dom']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_need_index_0_100'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_need_index_0_100']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_broadbandtypedominant_3_0(feature) {
+            switch(String(feature.properties['nyc_acs_broadband_income_tracts_2023_broadband_type_dom'])) {
+                case 'DSL':
+                    return {
+                pane: 'pane_broadbandtypedominant_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(188,210,101,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Fiber':
+                    return {
+                pane: 'pane_broadbandtypedominant_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(213,15,24,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mixed/None':
+                    return {
+                pane: 'pane_broadbandtypedominant_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(210,81,122,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_broadbandtypedominant_3');
+        map.getPane('pane_broadbandtypedominant_3').style.zIndex = 403;
+        map.getPane('pane_broadbandtypedominant_3').style['mix-blend-mode'] = 'normal';
+        var layer_broadbandtypedominant_3 = new L.geoJson(json_broadbandtypedominant_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_broadbandtypedominant_3',
+            layerName: 'layer_broadbandtypedominant_3',
+            pane: 'pane_broadbandtypedominant_3',
+            onEachFeature: pop_broadbandtypedominant_3,
+            style: style_broadbandtypedominant_3_0,
+        });
+        bounds_group.addLayer(layer_broadbandtypedominant_3);
+        map.addLayer(layer_broadbandtypedominant_3);
+        function pop_householdswfiber_4(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CTLabel'] !== null ? autolinker.link(String(feature.properties['CTLabel']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroCode'] !== null ? autolinker.link(String(feature.properties['BoroCode']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroName'] !== null ? autolinker.link(String(feature.properties['BoroName']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CT2020'] !== null ? autolinker.link(String(feature.properties['CT2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroCT2020'] !== null ? autolinker.link(String(feature.properties['BoroCT2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDEligibil'] !== null ? autolinker.link(String(feature.properties['CDEligibil']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NTAName'] !== null ? autolinker.link(String(feature.properties['NTAName']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NTA2020'] !== null ? autolinker.link(String(feature.properties['NTA2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDTA2020'] !== null ? autolinker.link(String(feature.properties['CDTA2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDTANAME'] !== null ? autolinker.link(String(feature.properties['CDTANAME']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['GEOID'] !== null ? autolinker.link(String(feature.properties['GEOID']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['PUMA'] !== null ? autolinker.link(String(feature.properties['PUMA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Leng'] !== null ? autolinker.link(String(feature.properties['Shape_Leng']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Area'] !== null ? autolinker.link(String(feature.properties['Shape_Area']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_NAME'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_NAME']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_state'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_state']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_county'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_county']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_tract'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_tract']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_households_total'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_households_total']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_median_income']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_broadband_any'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_broadband_any']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_no_internet'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_no_internet']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fiber'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fiber']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cable'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cable']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_dsl'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_dsl']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fixed_wireless'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fixed_wireless']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_satellite'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_satellite']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cellular_only'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cellular_only']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_broadband_any'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_broadband_any']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cable'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cable']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_dsl'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_dsl']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fixed_wireless'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fixed_wireless']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_satellite'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_satellite']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cellular_only'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cellular_only']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_broadband_type_dom'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_broadband_type_dom']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_need_index_0_100'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_need_index_0_100']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_householdswfiber_4_0(feature) {
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 0.000000 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 0.000000 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,253,191,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 0.000000 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 38.816501 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,239,177,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 38.816501 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 50.579323 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,225,162,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 50.579323 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 54.316572 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,210,149,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 54.316572 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 57.323259 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,196,137,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 57.323259 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 59.882596 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,182,125,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 59.882596 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 61.595604 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,168,114,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 61.595604 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 63.412388 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,154,106,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 63.412388 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 65.041255 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,139,99,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 65.041255 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 66.595079 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(249,124,93,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 66.595079 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 68.178582 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(246,110,92,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 68.178582 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 69.470844 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(241,96,93,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 69.470844 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 70.696896 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(233,85,98,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 70.696896 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 71.880381 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(223,75,103,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 71.880381 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 73.122372 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(213,67,110,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 73.122372 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 74.210217 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(201,61,115,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 74.210217 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 75.091042 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(188,57,119,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 75.091042 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 76.159937 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(176,52,124,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 76.159937 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 76.995776 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(163,49,126,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 76.995776 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 77.915762 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(150,44,128,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 77.915762 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 78.863730 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(138,40,129,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 78.863730 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 79.689454 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(125,36,129,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 79.689454 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 80.643589 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(114,31,129,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 80.643589 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 81.580236 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(102,26,128,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 81.580236 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 82.698246 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(89,22,126,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 82.698246 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 83.480349 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(77,17,122,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 83.480349 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 84.593039 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(64,15,116,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 84.593039 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 85.590250 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(51,16,103,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 85.590250 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 86.685230 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(39,17,87,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 86.685230 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 87.950981 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(27,16,68,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 87.950981 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 89.144847 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(18,13,50,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 89.144847 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 90.565047 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(9,7,33,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 90.565047 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 93.124002 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(4,3,17,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] >= 93.124002 && feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] <= 100.000000 ) {
+                return {
+                pane: 'pane_householdswfiber_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(0,0,4,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_householdswfiber_4');
+        map.getPane('pane_householdswfiber_4').style.zIndex = 404;
+        map.getPane('pane_householdswfiber_4').style['mix-blend-mode'] = 'normal';
+        var layer_householdswfiber_4 = new L.geoJson(json_householdswfiber_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_householdswfiber_4',
+            layerName: 'layer_householdswfiber_4',
+            pane: 'pane_householdswfiber_4',
+            onEachFeature: pop_householdswfiber_4,
+            style: style_householdswfiber_4_0,
+        });
+        bounds_group.addLayer(layer_householdswfiber_4);
+        map.addLayer(layer_householdswfiber_4);
+        function pop_MedianHouseholdIncome_5(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CTLabel'] !== null ? autolinker.link(String(feature.properties['CTLabel']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroCode'] !== null ? autolinker.link(String(feature.properties['BoroCode']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroName'] !== null ? autolinker.link(String(feature.properties['BoroName']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CT2020'] !== null ? autolinker.link(String(feature.properties['CT2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BoroCT2020'] !== null ? autolinker.link(String(feature.properties['BoroCT2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDEligibil'] !== null ? autolinker.link(String(feature.properties['CDEligibil']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NTAName'] !== null ? autolinker.link(String(feature.properties['NTAName']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NTA2020'] !== null ? autolinker.link(String(feature.properties['NTA2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDTA2020'] !== null ? autolinker.link(String(feature.properties['CDTA2020']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CDTANAME'] !== null ? autolinker.link(String(feature.properties['CDTANAME']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['GEOID'] !== null ? autolinker.link(String(feature.properties['GEOID']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['PUMA'] !== null ? autolinker.link(String(feature.properties['PUMA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Leng'] !== null ? autolinker.link(String(feature.properties['Shape_Leng']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Shape_Area'] !== null ? autolinker.link(String(feature.properties['Shape_Area']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_NAME'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_NAME']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_state'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_state']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_county'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_county']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_tract'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_tract']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_households_total'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_households_total']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_median_income']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_broadband_any'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_broadband_any']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_no_internet'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_no_internet']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fiber'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fiber']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cable'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cable']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_dsl'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_dsl']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fixed_wireless'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_fixed_wireless']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_satellite'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_satellite']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cellular_only'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_hh_cellular_only']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_broadband_any'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_broadband_any']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_no_internet']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fiber']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cable'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cable']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_dsl'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_dsl']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fixed_wireless'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_fixed_wireless']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_satellite'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_satellite']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cellular_only'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_pct_cellular_only']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_broadband_type_dom'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_broadband_type_dom']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nyc_acs_broadband_income_tracts_2023_need_index_0_100'] !== null ? autolinker.link(String(feature.properties['nyc_acs_broadband_income_tracts_2023_need_index_0_100']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_MedianHouseholdIncome_5_0(feature) {
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= -666666666.000000 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= -666666666.000000 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,231,37,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= -666666666.000000 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 32676.888889 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,226,25,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 32676.888889 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 43900.333333 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(176,221,47,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 43900.333333 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 51414.777778 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(137,213,72,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 51414.777778 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 58616.555556 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(101,203,94,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 58616.555556 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 64215.333333 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(70,192,111,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 64215.333333 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 69788.000000 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(46,179,124,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 69788.000000 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 74704.666667 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(33,165,133,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 74704.666667 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 79539.000000 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(31,151,139,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 79539.000000 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 84110.777778 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(35,137,142,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 84110.777778 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 89866.444444 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(41,123,142,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 89866.444444 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 95476.000000 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(46,109,142,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 95476.000000 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 101505.333333 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(53,94,141,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 101505.333333 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 109893.777778 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(61,78,138,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 109893.777778 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 120250.333333 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(67,61,132,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 120250.333333 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 137297.666667 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(71,42,122,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 137297.666667 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 164489.111111 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(72,23,105,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] >= 164489.111111 && feature.properties['nyc_acs_broadband_income_tracts_2023_median_income'] <= 250001.000000 ) {
+                return {
+                pane: 'pane_MedianHouseholdIncome_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(68,1,84,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_MedianHouseholdIncome_5');
+        map.getPane('pane_MedianHouseholdIncome_5').style.zIndex = 405;
+        map.getPane('pane_MedianHouseholdIncome_5').style['mix-blend-mode'] = 'normal';
+        var layer_MedianHouseholdIncome_5 = new L.geoJson(json_MedianHouseholdIncome_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_MedianHouseholdIncome_5',
+            layerName: 'layer_MedianHouseholdIncome_5',
+            pane: 'pane_MedianHouseholdIncome_5',
+            onEachFeature: pop_MedianHouseholdIncome_5,
+            style: style_MedianHouseholdIncome_5_0,
+        });
+        bounds_group.addLayer(layer_MedianHouseholdIncome_5);
+        map.addLayer(layer_MedianHouseholdIncome_5);
+        var overlaysTree = [
+            {label: 'Median Household Income<br /><table><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_6666666666666666660.png" /></td><td>-666666666 - -666666666</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_666666666326771.png" /></td><td>-666666666 - 32677</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_32677439002.png" /></td><td>32677 - 43900</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_43900514153.png" /></td><td>43900 - 51415</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_51415586174.png" /></td><td>51415 - 58617</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_58617642155.png" /></td><td>58617 - 64215</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_64215697886.png" /></td><td>64215 - 69788</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_69788747057.png" /></td><td>69788 - 74705</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_74705795398.png" /></td><td>74705 - 79539</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_79539841119.png" /></td><td>79539 - 84111</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_841118986610.png" /></td><td>84111 - 89866</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_898669547611.png" /></td><td>89866 - 95476</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_9547610150512.png" /></td><td>95476 - 101505</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_10150510989413.png" /></td><td>101505 - 109894</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_10989412025014.png" /></td><td>109894 - 120250</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_12025013729815.png" /></td><td>120250 - 137298</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_13729816448916.png" /></td><td>137298 - 164489</td></tr><tr><td style="text-align: center;"><img src="legend/MedianHouseholdIncome_5_16448925000117.png" /></td><td>164489 - 250001</td></tr></table>', layer: layer_MedianHouseholdIncome_5},
+            {label: '% households w/ fiber<br /><table><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_000.png" /></td><td>0 - 0</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_038821.png" /></td><td>0 - 38.82</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_388250582.png" /></td><td>38.82 - 50.58</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_505854323.png" /></td><td>50.58 - 54.32</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_543257324.png" /></td><td>54.32 - 57.32</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_573259885.png" /></td><td>57.32 - 59.88</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_59886166.png" /></td><td>59.88 - 61.6</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_61663417.png" /></td><td>61.6 - 63.41</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_634165048.png" /></td><td>63.41 - 65.04</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_65046669.png" /></td><td>65.04 - 66.6</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_666681810.png" /></td><td>66.6 - 68.18</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_6818694711.png" /></td><td>68.18 - 69.47</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_694770712.png" /></td><td>69.47 - 70.7</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_707718813.png" /></td><td>70.7 - 71.88</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_7188731214.png" /></td><td>71.88 - 73.12</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_7312742115.png" /></td><td>73.12 - 74.21</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_7421750916.png" /></td><td>74.21 - 75.09</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_7509761617.png" /></td><td>75.09 - 76.16</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_76167718.png" /></td><td>76.16 - 77</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_77779219.png" /></td><td>77 - 77.92</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_7792788620.png" /></td><td>77.92 - 78.86</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_7886796921.png" /></td><td>78.86 - 79.69</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_7969806422.png" /></td><td>79.69 - 80.64</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_8064815823.png" /></td><td>80.64 - 81.58</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_815882724.png" /></td><td>81.58 - 82.7</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_827834825.png" /></td><td>82.7 - 83.48</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_8348845926.png" /></td><td>83.48 - 84.59</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_8459855927.png" /></td><td>84.59 - 85.59</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_8559866928.png" /></td><td>85.59 - 86.69</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_8669879529.png" /></td><td>86.69 - 87.95</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_8795891430.png" /></td><td>87.95 - 89.14</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_8914905731.png" /></td><td>89.14 - 90.57</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_9057931232.png" /></td><td>90.57 - 93.12</td></tr><tr><td style="text-align: center;"><img src="legend/householdswfiber_4_931210033.png" /></td><td>93.12 - 100</td></tr></table>', layer: layer_householdswfiber_4},
+            {label: 'broadband type (dominant)<br /><table><tr><td style="text-align: center;"><img src="legend/broadbandtypedominant_3_DSL0.png" /></td><td>DSL</td></tr><tr><td style="text-align: center;"><img src="legend/broadbandtypedominant_3_Fiber1.png" /></td><td>Fiber</td></tr><tr><td style="text-align: center;"><img src="legend/broadbandtypedominant_3_MixedNone2.png" /></td><td>Mixed/None</td></tr></table>', layer: layer_broadbandtypedominant_3},
+            {label: 'Household w/ No Internet Access<br /><table><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_000.png" /></td><td>0 - 0</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_0081.png" /></td><td>0 - 0.8</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_081792.png" /></td><td>0.8 - 1.79</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_1792543.png" /></td><td>1.79 - 2.54</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_2543374.png" /></td><td>2.54 - 3.37</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_3374155.png" /></td><td>3.37 - 4.15</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_4154936.png" /></td><td>4.15 - 4.93</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_4935797.png" /></td><td>4.93 - 5.79</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_5796588.png" /></td><td>5.79 - 6.58</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_6587429.png" /></td><td>6.58 - 7.42</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_74282110.png" /></td><td>7.42 - 8.21</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_8219111.png" /></td><td>8.21 - 9.1</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_91100812.png" /></td><td>9.1 - 10.08</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_100811213.png" /></td><td>10.08 - 11.2</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_112124314.png" /></td><td>11.2 - 12.43</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_1243143115.png" /></td><td>12.43 - 14.31</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_1431166116.png" /></td><td>14.31 - 16.61</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_1661215617.png" /></td><td>16.61 - 21.56</td></tr><tr><td style="text-align: center;"><img src="legend/HouseholdwNoInternetAccess_2_215610018.png" /></td><td>21.56 - 100</td></tr></table>', layer: layer_HouseholdwNoInternetAccess_2},
+            {label: 'zohran_win_by_ed<br /><table><tr><td style="text-align: center;"><img src="legend/zohran_win_by_ed_1_503450.png" /></td><td>-50 - -34.5</td></tr><tr><td style="text-align: center;"><img src="legend/zohran_win_by_ed_1_3452691.png" /></td><td>-34.5 - -26.9</td></tr><tr><td style="text-align: center;"><img src="legend/zohran_win_by_ed_1_2691752.png" /></td><td>-26.9 - -17.5</td></tr><tr><td style="text-align: center;"><img src="legend/zohran_win_by_ed_1_1754093.png" /></td><td>-17.5 - 40.9</td></tr><tr><td style="text-align: center;"><img src="legend/zohran_win_by_ed_1_4095094.png" /></td><td>40.9 - 50.9</td></tr><tr><td style="text-align: center;"><img src="legend/zohran_win_by_ed_1_5096185.png" /></td><td>50.9 - 61.8</td></tr><tr><td style="text-align: center;"><img src="legend/zohran_win_by_ed_1_6181006.png" /></td><td>61.8 - 100</td></tr></table>', layer: layer_zohran_win_by_ed_1},
+            {label: '<img src="legend/NYC_Census_tracts_0.png" /> NYC_Census_tracts', layer: layer_NYC_Census_tracts_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: false, 
+        });
+        lay.addTo(map);
+		document.addEventListener("DOMContentLoaded", function() {
+            // set new Layers List height which considers toggle icon
+            function newLayersListHeight() {
+                var layerScrollbarElement = document.querySelector('.leaflet-control-layers-scrollbar');
+                if (layerScrollbarElement) {
+                    var layersListElement = document.querySelector('.leaflet-control-layers-list');
+                    var originalHeight = layersListElement.style.height 
+                        || window.getComputedStyle(layersListElement).height;
+                    var newHeight = parseFloat(originalHeight) - 50;
+                    layersListElement.style.height = newHeight + 'px';
+                }
+            }
+            var isLayersListExpanded = true;
+            var controlLayersElement = document.querySelector('.leaflet-control-layers');
+            var toggleLayerControl = document.querySelector('.leaflet-control-layers-toggle');
+            // toggle Collapsed/Expanded and apply new Layers List height
+            toggleLayerControl.addEventListener('click', function() {
+                if (isLayersListExpanded) {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                } else {
+                    controlLayersElement.classList.add('leaflet-control-layers-expanded');
+                }
+                isLayersListExpanded = !isLayersListExpanded;
+                newLayersListHeight()
+            });	
+			// apply new Layers List height if toggle layerstree
+			if (controlLayersElement) {
+				controlLayersElement.addEventListener('click', function(event) {
+					var toggleLayerHeaderPointer = event.target.closest('.leaflet-layerstree-header-pointer span');
+					if (toggleLayerHeaderPointer) {
+						newLayersListHeight();
+					}
+				});
+			}
+            // Collapsed/Expanded at Start to apply new height
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            // Collapsed touch/small screen
+            var isSmallScreen = window.innerWidth < 650;
+            if (isSmallScreen) {
+                setTimeout(function() {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                    isLayersListExpanded = !isLayersListExpanded;
+                }, 500);
+            }  
+        });       
+        setBounds();
+        </script>
+    </body>
+</html>
